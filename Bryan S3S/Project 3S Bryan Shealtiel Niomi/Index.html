@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Shooting Target Game</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        background: linear-gradient(180deg, #f2f2f2, #cfcfcf);
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .game-container {
+        background: #ffffff;
+        width: 420px;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+        text-align: center;
+    }
+
+    h2 {
+        margin: 5px 0;
+        color: #444;
+        letter-spacing: 2px;
+    }
+
+    .info {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        color: #555;
+        font-weight: bold;
+    }
+
+    canvas {
+        background: #e6e6e6;
+        border: 2px solid #999;
+        border-radius: 10px;
+        cursor: crosshair;
+    }
+
+    .btn {
+        margin-top: 10px;
+        padding: 10px 20px;
+        background: #666;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .btn:hover {
+        background: #444;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="game-container">
+    <h2>TARGET SHOOTER</h2>
+
+    <div class="info">
+        <div>Score: <span id="score">0</span></div>
+        <div>Time: <span id="time">30</span>s</div>
+    </div>
+
+    <canvas id="gameCanvas" width="380" height="300"></canvas>
+
+    <button class="btn" onclick="startGame()">START GAME</button>
+</div>
+
+<script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let target = { x: 100, y: 100, r: 20 };
+    let score = 0;
+    let time = 30;
+    let gameInterval, timerInterval;
+
+    function drawTarget() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // target outer
+        ctx.beginPath();
+        ctx.arc(target.x, target.y, target.r, 0, Math.PI * 2);
+        ctx.fillStyle = "#555";
+        ctx.fill();
+
+        // target inner
+        ctx.beginPath();
+        ctx.arc(target.x, target.y, target.r / 2, 0, Math.PI * 2);
+        ctx.fillStyle = "#fff";
+        ctx.fill();
+    }
+
+    function randomTarget() {
+        target.x = Math.random() * (canvas.width - 40) + 20;
+        target.y = Math.random() * (canvas.height - 40) + 20;
+        drawTarget();
+    }
+
+    canvas.addEventListener("click", function(e) {
+        if (time <= 0) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const dist = Math.sqrt(
+            (mouseX - target.x) ** 2 +
+            (mouseY - target.y) ** 2
+        );
+
+        if (dist < target.r) {
+            score += 10;
+            document.getElementById("score").textContent = score;
+            randomTarget();
+        }
+    });
+
+    function startGame() {
+        score = 0;
+        time = 30;
+        document.getElementById("score").textContent = score;
+        document.getElementById("time").textContent = time;
+
+        randomTarget();
+
+        clearInterval(gameInterval);
+        clearInterval(timerInterval);
+
+        gameInterval = setInterval(randomTarget, 1000);
+
+        timerInterval = setInterval(() => {
+            time--;
+            document.getElementById("time").textContent = time;
+            if (time <= 0) {
+                clearInterval(gameInterval);
+                clearInterval(timerInterval);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                alert("Game Over!\nScore Anda: " + score);
+            }
+        }, 1000);
+    }
+</script>
+
+</body>
+</html>
